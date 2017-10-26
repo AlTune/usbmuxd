@@ -71,7 +71,6 @@ int libusb_verbose = 0;
 struct usb_device {
 	libusb_device_handle *dev;
 	uint8_t bus, address;
-	uint16_t vid, pid;
 	char serial[256];
 	int alive;
 	uint8_t interface, ep_in, ep_out;
@@ -79,6 +78,7 @@ struct usb_device {
 	struct collection tx_xfers;
 	int wMaxPacketSize;
 	uint64_t speed;
+	struct libusb_device_descriptor devdesc;
 };
 
 static struct collection device_list;
@@ -449,8 +449,7 @@ static int usb_device_add(libusb_device* dev)
 	usbdev->serial[res] = 0;
 	usbdev->bus = bus;
 	usbdev->address = address;
-	usbdev->vid = devdesc.idVendor;
-	usbdev->pid = devdesc.idProduct;
+	usbdev->devdesc = devdesc;
 	usbdev->speed = 480000000;
 	usbdev->dev = handle;
 	usbdev->alive = 1;
@@ -595,7 +594,7 @@ uint16_t usb_get_pid(struct usb_device *dev)
 	if(!dev->dev) {
 		return 0;
 	}
-	return dev->pid;
+	return dev->devdesc.idProduct;
 }
 
 uint64_t usb_get_speed(struct usb_device *dev)
